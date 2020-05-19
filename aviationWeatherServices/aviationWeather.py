@@ -1,33 +1,45 @@
 import requests
+import math
+import csv
 from .metar import Metar
 
 class aviationWeather:
     def __init__(self):
         self.stations={}
-        for item in requests.get(
+        weatherData = requests.get(
                     "https://www.aviationweather.gov/adds/dataserver_current/current/metars.cache.csv"
-                    ).content.decode('utf-8').split('\n'):
+                    ).content.decode('utf-8')
+        for item in csv.reader(weatherData.splitlines(),delimiter=','):
             try:
-                item.split(',')[1]
+                item[1]
             except IndexError:
                 continue
-            self.stations[item.split(',')[1]] = Metar(item.split(','))
+            if item[0] == "raw_text":
+                continue
+            self.stations[item[1]] = Metar(item)
 
     def getStation(self, location):
         return self.stations[location].getAll()
 
+    def getStationPosition(self,location,axis="both"):
+        return self.stations[location].getcoordinates(axis)
+
+    def getNearestStation(self,longitude,latitude):
+        self.x1=float(longitude)
+        self.y1=float(latitude)
+        for station in self.stations.keys():
+            print(self.stations[station].getStationName())
+            self.x2=self.stations[station].getcoordinates("latitude")
+            self.y2=self.stations[station].getcoordinates("longitude")
+            print(self.stations[station].getcoordinates())
+            if self.y2 == None or self.x2 == None:
+                continue
+            self.distance = math.fabs(math.sqrt((self.x2-self.x1)**2+(self.y2-self.y1)**2))
+            if self.distance > 180: #if over 180 degrees in distance, subtract from 360 to use the shorter distance around the globe.
+                self.distance = 360 - self.distance
+
+            print("Distance: " + str(self.distance))
+
     def getStations(self):
-        return list(self.stations.keys())[1:]
+        return list(self.stations.keys())
 
-    def getPrecipitation(self,station):
-        raw = self.stations[station].getMetarRaw()
-        if "-RA" in raw or "-TS" in raw:
-            return True
-        else:
-            return False
-
-    def getOvercast(self,station):
-        if "OVC" in self.stations[station].getMetarRaw():
-            return True
-        else:
-            return False
