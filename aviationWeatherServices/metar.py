@@ -42,6 +42,7 @@ class Metar:
         self.vert_vis_ft = inputString[39]
         self.metar_type = inputString[40]
         self.elevation_m = inputString[41]
+        self.relativeDistance = None
 
     def getAll(self):
         return self.__dict__
@@ -57,15 +58,8 @@ class Metar:
             return float(self.latitude)
         elif axis == "longitude":
             if self.longitude == (None or ""):
-                print("None lon!")
                 return None
             return float(self.longitude)
-
-    def setRelativeDistance(self,distance=float):
-        self.relativeDistance = distance
-
-    def getRelativeDistance(self):
-        return self.relativeDistance
 
     def getMetarRaw(self):
         return self.metarRaw

@@ -1,5 +1,6 @@
 import aviationWeatherServices
 
 k = aviationWeatherServices.aviationWeather()
-print(k.getNearestStation(33,-112))
-print(k.getStations())
+location = aviationWeatherServices.coordinateLocation(33.659217, -112.084063)
+print(location.getCoordinates())
+print(k.getNearestStation(location))
